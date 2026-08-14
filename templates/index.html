@@ -3,26 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CS Class Chatroom| Designed By Jackson America Inc, Stanford,Silicon Vally,California,The UNITED STATES.</title>  
+    <title>CS Class Chatroom | Designed By Jackson America Inc, Stanford, Silicon Valley, California, The UNITED STATES.</title>
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background-color: #121212; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .card { background: #1e1e1e; padding: 25px; border-radius: 12px; width: 380px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        body { 
+            font-family: 'Segoe UI', sans-serif; 
+            background-color: #121212; 
+            color: white; 
+            display: flex; 
+            flex-direction: column;
+            align-items: center; 
+            min-height: 100vh; 
+            margin: 0; 
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        .card { 
+            background: #1e1e1e; 
+            padding: 25px; 
+            border-radius: 12px; 
+            width: 90%; 
+            max-width: 900px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5); 
+            box-sizing: border-box;
+        }
+
         h2 { text-align: center; color: #00e676; margin-top: 0; }
         input, button { width: 100%; padding: 12px; margin-top: 10px; border-radius: 6px; border: none; box-sizing: border-box; }
         input { background: #2a2a2a; color: white; border: 1px solid #444; }
         button { background: #00e676; color: black; font-weight: bold; cursor: pointer; }
         button:hover { background: #00c853; }
-        #chat-box { height: 320px; overflow-y: auto; background: #2a2a2a; border-radius: 6px; padding: 10px; margin-bottom: 10px; }
-        .message { margin-bottom: 8px; font-size: 14px; }
-        .system { color: #888; font-style: italic; text-align: center; }
-        .hidden { display: none; }
-    </style>
-</head>
+        
+        #chat-box { 
+            height: 450px; 
+            overflow-y: auto; 
+            background: #2a2a2a; 
+            border-radius: 6px; 
+            padding: 15px; 
+            margin-bottom: 10px; 
+        }
+function login() {
+    const name = document.getElementById('username-input').value.trim();
+    if (name !== "") {
+        const sound = document.getElementById('tingTongSound');
+        if (sound) {
+            sound.play().then(() => { sound.pause(); sound.currentTime = 0; }).catch(e => console.log(e));
+        }
+        socket.emit('join_room', { username: name });
+    }
+}
+            sound.play().then(() => {
+                sound.pause();
+                sound.currentTime = 0;
+            }).catch(e => console.log("Audio unlock error:", e));
+        }
+
+        socket.emit('join_room', { username: name });
+    }
+}
 <body>
-    <header style="text-align: center; font-family: Arial, sans-serif; margin-bottom: 25px;">
+
+    <header>
         <h1 style="margin-bottom: 5px;">CS class chat room</h1>
-        <h2 style="margin-top: 0; color: #00e676;">Designed by Jackson America Inc,Silicon Vally,Stanford,California,The UNITED STATES.</h2>
+        <h2 style="margin-top: 0; color: #00e676;">Designed by Jackson America Inc.</h2>
         <p style="margin: 2px 0; font-size: 1.1em; color: #ccc;">
             Stanford, Silicon Valley, California, United States
         </p>
@@ -31,7 +81,15 @@
         </p>
     </header>
 
-    <div id="login-card" class="card">
+   socket.on('receive_message', function(data) {
+    const sound = document.getElementById('tingTongSound');
+    if (sound) {
+        sound.currentTime = 0;
+        sound.play().catch(e => console.log("Audio blocked by browser:", e));
+    }
+
+    const chatBox = document.getElementById('chat-box');
+    const msgDiv = document.createElement('div');
         <h2>CS Class Chat</h2>
         <p style="text-align:center; font-size:13px; color:#aaa;">Enter your name to start chatting</p>
         <input type="text" id="username-input" placeholder="Type your name (e.g. David, Richard)...">
@@ -78,6 +136,13 @@
         }
 
         socket.on('receive_message', function(data) {
+            // Play notification sound for incoming messages
+            const sound = document.getElementById('tingTongSound');
+            if (sound) {
+                sound.currentTime = 0;
+                sound.play().catch(e => console.log("Audio blocked by browser:", e));
+            }
+
             const chatBox = document.getElementById('chat-box');
             const msgDiv = document.createElement('div');
             msgDiv.classList.add('message');
