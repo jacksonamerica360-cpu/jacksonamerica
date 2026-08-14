@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CS Class Chatroom | Designed By Jackson America Inc, Stanford, Silicon Valley, California, The UNITED STATES.</title>
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
     <style>
         body { 
@@ -48,25 +49,12 @@
             padding: 15px; 
             margin-bottom: 10px; 
         }
-function login() {
-    const name = document.getElementById('username-input').value.trim();
-    if (name !== "") {
-        const sound = document.getElementById('tingTongSound');
-        if (sound) {
-            sound.play().then(() => { sound.pause(); sound.currentTime = 0; }).catch(e => console.log(e));
-        }
-        socket.emit('join_room', { username: name });
-    }
-}
-            sound.play().then(() => {
-                sound.pause();
-                sound.currentTime = 0;
-            }).catch(e => console.log("Audio unlock error:", e));
-        }
 
-        socket.emit('join_room', { username: name });
-    }
-}
+        .message { margin-bottom: 8px; font-size: 15px; }
+        .system { color: #888; font-style: italic; text-align: center; }
+        .hidden { display: none; }
+    </style>
+</head>
 <body>
 
     <header>
@@ -80,15 +68,9 @@ function login() {
         </p>
     </header>
 
-   socket.on('receive_message', function(data) {
-    const sound = document.getElementById('tingTongSound');
-    if (sound) {
-        sound.currentTime = 0;
-        sound.play().catch(e => console.log("Audio blocked by browser:", e));
-    }
+    <audio id="tingTongSound" src="https://cdn.freesound.org/previews/536/536108_11861866-lq.mp3" preload="auto"></audio>
 
-    const chatBox = document.getElementById('chat-box');
-    const msgDiv = document.createElement('div');
+    <div id="login-card" class="card">
         <h2>CS Class Chat</h2>
         <p style="text-align:center; font-size:13px; color:#aaa;">Enter your name to start chatting</p>
         <input type="text" id="username-input" placeholder="Type your name (e.g. David, Richard)...">
@@ -109,6 +91,15 @@ function login() {
         function login() {
             const name = document.getElementById('username-input').value.trim();
             if (name !== "") {
+                // Unlock audio on first user interaction so browsers don't block it
+                const sound = document.getElementById('tingTongSound');
+                if (sound) {
+                    sound.play().then(() => {
+                        sound.pause();
+                        sound.currentTime = 0;
+                    }).catch(e => console.log("Audio unlock error:", e));
+                }
+
                 socket.emit('join_room', { username: name });
             }
         }
@@ -135,11 +126,11 @@ function login() {
         }
 
         socket.on('receive_message', function(data) {
-            // Play notification sound for incoming messages
+            // Play notification sound
             const sound = document.getElementById('tingTongSound');
             if (sound) {
                 sound.currentTime = 0;
-                sound.play().catch(e => console.log("Audio blocked by browser:", e));
+                sound.play().catch(e => console.log("Browser blocked audio:", e));
             }
 
             const chatBox = document.getElementById('chat-box');
