@@ -67,12 +67,10 @@
         </p>
     </header>
 
-    <!-- NEW FEATURE: Live Active User Counter -->
+    <!-- Live Active User Counter -->
     <div style="text-align: center; margin-bottom: 10px; color: #00e676;">
         🟢 Active Users: <span id="online-count">0</span>
     </div>
-
-    <audio id="tingTongSound" src="https://cdn.freesound.org/previews/536/536108_11861866-lq.mp3" preload="auto"></audio>
 
     <div id="login-card" class="card">
         <h2>CS Class Chat By Harsh Shankar Sharma</h2>
@@ -91,18 +89,40 @@
     <script>
         const socket = io();
         let currentUser = "";
+        let audioCtx = null;
+
+        // Native Web Audio API generator (no external sound file required)
+        function playBeepSound() {
+            try {
+                if (!audioCtx) {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(587.33, audioCtx.currentTime); // D5 pitch note
+                gain.gain.setValueAtTime(0.15, audioCtx.currentTime); // Moderate volume
+
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.15); // Plays for 150ms
+            } catch (e) {
+                console.log("Audio notification error:", e);
+            }
+        }
 
         function login() {
             const name = document.getElementById('username-input').value.trim();
             if (name !== "") {
-                const sound = document.getElementById('tingTongSound');
-                if (sound) {
-                    sound.play().then(() => {
-                        sound.pause();
-                        sound.currentTime = 0;
-                    }).catch(e => console.log("Audio unlock error:", e));
-                }
-                
+                // User click unlocks browser audio permissions automatically
+                playBeepSound();
                 socket.emit('join_room', { username: name });
             }
         }
@@ -129,11 +149,8 @@
         }
 
         socket.on('receive_message', function(data) {
-            const sound = document.getElementById('tingTongSound');
-            if (sound) {
-                sound.currentTime = 0;
-                sound.play().catch(e => console.log("Browser blocked audio:", e));
-            }
+            // Trigger local audio chime on new message
+            playBeepSound();
 
             const chatBox = document.getElementById('chat-box');
             const msgDiv = document.createElement('div');
@@ -150,7 +167,7 @@
             chatBox.scrollTop = chatBox.scrollHeight;
         });
 
-        // NEW FEATURE: Receive the live user count from Python
+        // Receive live active user count from backend
         socket.on('update_user_count', function(data) {
             document.getElementById('online-count').innerText = data.count;
         });
