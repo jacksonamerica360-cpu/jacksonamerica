@@ -1,7 +1,12 @@
 <!DOCTYPE html>
-<div style="text-align: center; margin-bottom: 10px; color: #00e676;">
-    🟢 Active Users: <span id="online-count">0</span>
-</div>
+</header>
+
+    <!-- Paste the counter here inside the body -->
+    <div style="text-align: center; margin-bottom: 10px; color: #00e676;">
+        🟢 Active Users: <span id="online-count">0</span>
+    </div>
+
+    <audio id="tingTongSound" src="...">
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -145,7 +150,10 @@
                 msgDiv.innerText = data.msg;
             } else {
                 msgDiv.innerHTML = `<b style="color:#00e676">${data.user}:</b> ${data.msg}`;
-            }
+            }// Listen for the active user count broadcast from Python
+socket.on('update_user_count', function(data) {
+    document.getElementById('online-count').innerText = data.count;
+});
 
             chatBox.appendChild(msgDiv);
             chatBox.scrollTop = chatBox.scrollHeight;
