@@ -89,14 +89,45 @@
     <script>
         const socket = io();
         let currentUser = "";
+        let audioCtx = null;
+
+        // Native Web Audio API sound generator
+        function playBeepSound() {
+            try {
+                if (!audioCtx) {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(587.33, audioCtx.currentTime); // D5 pitch note
+                gain.gain.setValueAtTime(0.15, audioCtx.currentTime); // Volume level
+
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.15); // Plays for 150ms
+            } catch (e) {
+                console.log("Audio notification error:", e);
+            }
+        }
 
         function login() {
             const name = document.getElementById('username-input').value.trim();
             if (name !== "") {
-                // Request system notification permission for phone native sounds
+                playBeepSound(); // Unlocks browser audio on user interaction
+                
+                // Request OS permission for system notifications
                 if ("Notification" in window && Notification.permission !== "granted") {
                     Notification.requestPermission();
                 }
+                
                 socket.emit('join_room', { username: name });
             }
         }
@@ -123,9 +154,14 @@
         }
 
         socket.on('receive_message', function(data) {
-            // Trigger native OS system notification (plays phone's default ringtone/chime)
-            if ("Notification" in window && Notification.permission === "granted") {
-                if (data.user !== currentUser && data.user !== 'System') {
+            // Only trigger sounds/notifications for incoming messages from other users
+            if (data.user !== currentUser && data.user !== 'System') {
+                
+                // Play instant chime inside active tab
+                playBeepSound();
+
+                // Send system alert if user is outside the tab
+                if ("Notification" in window && Notification.permission === "granted" && document.hidden) {
                     new Notification(data.user, {
                         body: data.msg,
                         icon: "https://cdn-icons-png.flaticon.com/512/134/134937.png"
@@ -148,7 +184,7 @@
             chatBox.scrollTop = chatBox.scrollHeight;
         });
 
-        // Receive live active user count from backend
+        // Live user count listener from Python backend
         socket.on('update_user_count', function(data) {
             document.getElementById('online-count').innerText = data.count;
         });
