@@ -5,9 +5,26 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'cs_chat_secret_key'
 socketio = SocketIO(app, cors_allowed_origins="*")
 
+# 1. Track active connected users
+active_users = 0
+
 @app.route('/')
 def index():
     return render_template('index.html')
+
+# 2. Triggered automatically when a user opens the app
+@socketio.on('connect')
+def handle_connect():
+    global active_users
+    active_users += 1
+    emit('update_user_count', {'count': active_users}, broadcast=True)
+
+# 3. Triggered automatically when a user closes or leaves the app
+@socketio.on('disconnect')
+def handle_disconnect():
+    global active_users
+    active_users = max(0, active_users - 1)
+    emit('update_user_count', {'count': active_users}, broadcast=True)
 
 @socketio.on('join_room')
 def handle_join(data):
