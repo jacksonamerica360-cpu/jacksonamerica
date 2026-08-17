@@ -89,40 +89,14 @@
     <script>
         const socket = io();
         let currentUser = "";
-        let audioCtx = null;
-
-        // Native Web Audio API generator (no external sound file required)
-        function playBeepSound() {
-            try {
-                if (!audioCtx) {
-                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                }
-                if (audioCtx.state === 'suspended') {
-                    audioCtx.resume();
-                }
-
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(587.33, audioCtx.currentTime); // D5 pitch note
-                gain.gain.setValueAtTime(0.15, audioCtx.currentTime); // Moderate volume
-
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-
-                osc.start();
-                osc.stop(audioCtx.currentTime + 0.15); // Plays for 150ms
-            } catch (e) {
-                console.log("Audio notification error:", e);
-            }
-        }
 
         function login() {
             const name = document.getElementById('username-input').value.trim();
             if (name !== "") {
-                // User click unlocks browser audio permissions automatically
-                playBeepSound();
+                // Request system notification permission for phone native sounds
+                if ("Notification" in window && Notification.permission !== "granted") {
+                    Notification.requestPermission();
+                }
                 socket.emit('join_room', { username: name });
             }
         }
@@ -149,8 +123,15 @@
         }
 
         socket.on('receive_message', function(data) {
-            // Trigger local audio chime on new message
-            playBeepSound();
+            // Trigger native OS system notification (plays phone's default ringtone/chime)
+            if ("Notification" in window && Notification.permission === "granted") {
+                if (data.user !== currentUser && data.user !== 'System') {
+                    new Notification(data.user, {
+                        body: data.msg,
+                        icon: "https://cdn-icons-png.flaticon.com/512/134/134937.png"
+                    });
+                }
+            }
 
             const chatBox = document.getElementById('chat-box');
             const msgDiv = document.createElement('div');
