@@ -1,12 +1,4 @@
 <!DOCTYPE html>
-</header>
-
-    <!-- Paste the counter here inside the body -->
-    <div style="text-align: center; margin-bottom: 10px; color: #00e676;">
-        🟢 Active Users: <span id="online-count">0</span>
-    </div>
-
-    <audio id="tingTongSound" src="...">
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -14,57 +6,56 @@
     <title>CS Class Chatroom.</title>
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
     <style>
-        body { 
-            font-family: 'Segoe UI', sans-serif; 
-            background-color: #121212; 
-            color: white; 
-            display: flex; 
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #121212;
+            color: white;
+            display: flex;
             flex-direction: column;
-            align-items: center; 
-            min-height: 100vh; 
-            margin: 0; 
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
             padding: 20px;
             box-sizing: border-box;
         }
-
+        
         header {
             text-align: center;
             margin-bottom: 20px;
             width: 100%;
         }
-
-        .card { 
-            background: #1e1e1e; 
-            padding: 25px; 
-            border-radius: 12px; 
-            width: 90%; 
-            max-width: 900px; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5); 
+        
+        .card {
+            background: #1e1e1e;
+            padding: 25px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 900px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
             box-sizing: border-box;
         }
-
+        
         h2 { text-align: center; color: #00e676; margin-top: 0; }
         input, button { width: 100%; padding: 12px; margin-top: 10px; border-radius: 6px; border: none; box-sizing: border-box; }
         input { background: #2a2a2a; color: white; border: 1px solid #444; }
         button { background: #00e676; color: black; font-weight: bold; cursor: pointer; }
         button:hover { background: #00c853; }
         
-        #chat-box { 
-            height: 450px; 
-            overflow-y: auto; 
-            background: #2a2a2a; 
-            border-radius: 6px; 
-            padding: 15px; 
-            margin-bottom: 10px; 
+        #chat-box {
+            height: 450px;
+            overflow-y: auto;
+            background: #2a2a2a;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 10px;
         }
-
+        
         .message { margin-bottom: 8px; font-size: 15px; }
         .system { color: #888; font-style: italic; text-align: center; }
         .hidden { display: none; }
     </style>
 </head>
 <body>
-
     <header>
         <h1 style="margin-bottom: 5px;">CS Class Chatroom</h1>
         <h2 style="margin-top: 0; color: #00e676;">Designed by Jackson America Inc.</h2>
@@ -75,6 +66,11 @@
             (Programmer is only 17 years old)
         </p>
     </header>
+
+    <!-- NEW FEATURE: Live Active User Counter -->
+    <div style="text-align: center; margin-bottom: 10px; color: #00e676;">
+        🟢 Active Users: <span id="online-count">0</span>
+    </div>
 
     <audio id="tingTongSound" src="https://cdn.freesound.org/previews/536/536108_11861866-lq.mp3" preload="auto"></audio>
 
@@ -99,7 +95,6 @@
         function login() {
             const name = document.getElementById('username-input').value.trim();
             if (name !== "") {
-                // Unlock audio on first user interaction so browsers don't block it
                 const sound = document.getElementById('tingTongSound');
                 if (sound) {
                     sound.play().then(() => {
@@ -107,7 +102,7 @@
                         sound.currentTime = 0;
                     }).catch(e => console.log("Audio unlock error:", e));
                 }
-
+                
                 socket.emit('join_room', { username: name });
             }
         }
@@ -134,7 +129,6 @@
         }
 
         socket.on('receive_message', function(data) {
-            // Play notification sound
             const sound = document.getElementById('tingTongSound');
             if (sound) {
                 sound.currentTime = 0;
@@ -150,13 +144,15 @@
                 msgDiv.innerText = data.msg;
             } else {
                 msgDiv.innerHTML = `<b style="color:#00e676">${data.user}:</b> ${data.msg}`;
-            }// Listen for the active user count broadcast from Python
-socket.on('update_user_count', function(data) {
-    document.getElementById('online-count').innerText = data.count;
-});
+            }
 
             chatBox.appendChild(msgDiv);
             chatBox.scrollTop = chatBox.scrollHeight;
+        });
+
+        // NEW FEATURE: Receive the live user count from Python
+        socket.on('update_user_count', function(data) {
+            document.getElementById('online-count').innerText = data.count;
         });
     </script>
 </body>
